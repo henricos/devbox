@@ -97,4 +97,6 @@ LABEL org.opencontainers.image.version="${IMAGE_VERSION}" \
       org.opencontainers.image.source="https://github.com/henricos/devbox"
 
 EXPOSE 22
-ENTRYPOINT ["/usr/sbin/sshd", "-D"]
+# -e sends sshd's log output to stderr instead of syslog, so `docker logs`
+# actually shows auth failures — there is no syslog daemon in this image.
+ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]
