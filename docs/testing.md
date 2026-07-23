@@ -8,8 +8,9 @@ Builds the image locally (tag `devbox:smoke`, without publishing), starts a cont
 
 - the non-root user (`developer`) exists and has UID 1000, is not root;
 - `sshd` is running;
-- the expected tools are present and respond to `--version` (or equivalent): `node`, `npm`, `python3`, `git`, `gh`, `docker`, `jq`, `yq`, `tmux`, `uv`, `yt-dlp`, `psql`, `playwright`;
-- the `tmux-menu` script is present and executable at `/usr/local/bin`.
+- the expected tools are present and respond to `--version` (or equivalent): `node`, `npm`, `python3`, `git`, `gh`, `docker`, `jq`, `yq`, `bc`, `age`, `sops`, `tmux`, `uv`, `yt-dlp`, `psql`, `playwright`;
+- the `tmux-menu` script is present and executable at `/usr/local/bin`;
+- `developer` has passwordless `sudo` (checked with `sudo -n true`).
 
 At the end, the container is torn down and removed, whether or not the result was published.
 

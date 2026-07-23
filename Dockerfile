@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     openssh-server \
     python3 python3-pip python3-venv \
     postgresql-client \
-    tmux htop nano jq build-essential \
+    tmux htop nano jq bc age sudo build-essential \
     locales \
     && locale-gen pt_BR.UTF-8 \
     && update-locale LANG=pt_BR.UTF-8 LC_ALL=pt_BR.UTF-8 \
@@ -31,6 +31,12 @@ RUN apt-get update && apt-get install -y \
 RUN wget -qO /usr/local/bin/yq \
     https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
     && chmod +x /usr/local/bin/yq
+
+# sops — not in the Ubuntu apt repos, install the official .deb release
+ARG SOPS_VERSION=3.13.2
+RUN curl -sL -o /tmp/sops.deb \
+    "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops_${SOPS_VERSION}_amd64.deb" \
+    && dpkg -i /tmp/sops.deb && rm -f /tmp/sops.deb
 
 # uv + yt-dlp via pip (--break-system-packages required on Ubuntu 24.04 / PEP 668)
 RUN pip3 install uv yt-dlp --break-system-packages
@@ -58,6 +64,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 RUN usermod -l developer ubuntu && \
     usermod -d /home/developer -m developer && \
     groupmod -n developer ubuntu
+
+# Passwordless sudo — this is a single-user personal workstation (only the
+# owner holds the SSH key), so gating ad-hoc installs behind a password
+# prompt adds friction without a real security boundary to protect.
+RUN echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer \
+    && chmod 0440 /etc/sudoers.d/developer
 
 # Switch to developer to install nvm, Node and global npm packages
 USER developer

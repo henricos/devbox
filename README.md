@@ -29,17 +29,18 @@ See [how to run the image](docs/how-to-run.md) for what needs to be prepared bef
 
 | Category | Tools |
 |---|---|
-| Shell and system | bash, tmux, htop, nano |
+| Shell and system | bash, tmux, htop, nano, sudo |
 | Version control | git, gh (GitHub CLI) |
 | Node.js | nvm (Node 22 LTS) |
 | Python | python3, pip, venv, uv |
 | Database | psql (Postgres client) |
-| Data tools | jq, yq |
+| Data tools | jq, yq, bc |
+| Secrets | age, sops |
 | Containers | docker CLI |
 | Media | yt-dlp |
 | Browser automation | playwright |
 
-The container runs as a non-root user (`developer`, UID 1000) and exposes port 22 internally — the external mapping is defined in Compose. **No AI application comes pre-installed in the image**: installing and logging in to tools like Claude Code is left to whoever runs the container, done manually after the first boot.
+The container runs as a non-root user (`developer`, UID 1000) with passwordless `sudo` — this is a single-user personal workstation, so there is no multi-tenant boundary to protect behind a password prompt — and exposes port 22 internally, with the external mapping defined in Compose. **No AI application comes pre-installed in the image**: installing and logging in to tools like Claude Code is left to whoever runs the container, done manually after the first boot.
 
 ## Configuration
 

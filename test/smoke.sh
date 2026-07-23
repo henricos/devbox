@@ -54,6 +54,9 @@ check_cmd "gh --version"                 root "gh --version"
 check_cmd "docker --version"             root "docker --version"
 check_cmd "jq --version"                 root "jq --version"
 check_cmd "yq --version"                 root "yq --version"
+check_cmd "bc --version"                 root "bc --version"
+check_cmd "age --version"                root "age --version"
+check_cmd "sops --version"               root "sops --version"
 check_cmd "tmux -V"                      root "tmux -V"
 check_cmd "psql --version"               root "psql --version"
 check_cmd "uv --version"                 root "uv --version"
@@ -62,6 +65,7 @@ check_cmd "tmux-menu present and executable" root "test -x /usr/local/bin/tmux-m
 check_cmd "node --version"               developer "node --version"
 check_cmd "npm --version"                developer "npm --version"
 check_cmd "playwright --version"         developer "playwright --version"
+check_cmd "developer has passwordless sudo" developer "sudo -n true"
 
 log ""
 if [ "$STATUS" -eq 0 ]; then
