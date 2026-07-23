@@ -32,9 +32,12 @@ RUN wget -qO /usr/local/bin/yq \
     https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 \
     && chmod +x /usr/local/bin/yq
 
-# sops — not in the Ubuntu apt repos, install the official .deb release
-ARG SOPS_VERSION=3.13.2
-RUN curl -sL -o /tmp/sops.deb \
+# sops — not in the Ubuntu apt repos; resolve the latest release (the .deb
+# filename embeds the version, unlike yq, so it can't use a /latest/download
+# URL directly) and install it
+RUN SOPS_VERSION="$(curl -sIL https://github.com/getsops/sops/releases/latest \
+        | grep -i '^location' | grep -oP '/tag/v\K[0-9.]+' | tr -d '\r')" \
+    && curl -sL -o /tmp/sops.deb \
     "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops_${SOPS_VERSION}_amd64.deb" \
     && dpkg -i /tmp/sops.deb && rm -f /tmp/sops.deb
 
