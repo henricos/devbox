@@ -1,0 +1,73 @@
+#!/bin/bash
+set -u
+
+readonly SESSION_PREFIX="term"
+readonly SESSION_LIMIT=5
+
+session_name() {
+    printf '%s-%02d' "$SESSION_PREFIX" "$1"
+}
+
+session_exists() {
+    tmux has-session -t "$1" 2>/dev/null
+}
+
+first_available_choice() {
+    local i
+    local session
+
+    for i in $(seq 1 "$SESSION_LIMIT"); do
+        session="$(session_name "$i")"
+        if ! session_exists "$session"; then
+            echo "$i"
+            return
+        fi
+    done
+
+    echo "1"
+}
+
+open_session() {
+    local choice="$1"
+    exec tmux new-session -A -s "$(session_name "$choice")"
+}
+
+if [ ! -t 0 ]; then
+    open_session "1"
+fi
+
+while true; do
+    default_choice="$(first_available_choice)"
+
+    echo
+    echo "Persistent devbox sessions"
+    echo
+
+    for i in $(seq 1 "$SESSION_LIMIT"); do
+        session="$(session_name "$i")"
+        if session_exists "$session"; then
+            status="in use"
+        else
+            status="available"
+        fi
+
+        printf "%s) %s  %s\n" "$i" "$session" "$status"
+    done
+
+    echo
+    read -r -p "Choose a session [1-5] or press Enter to use the first available: " choice
+
+    if [ -z "$choice" ]; then
+        choice="$default_choice"
+    fi
+
+    case "$choice" in
+        1|2|3|4|5)
+            open_session "$choice"
+            ;;
+        *)
+            echo
+            echo "Invalid option. Choose 1, 2, 3, 4 or 5."
+            ;;
+    esac
+done

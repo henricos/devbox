@@ -1,0 +1,24 @@
+services:
+  devbox:
+    image: ghcr.io/henricos/devbox:latest
+    container_name: devbox
+    hostname: devbox
+    volumes:
+      # Required
+      # SSH keys directory: authorized_keys (inbound access) + private key for GitHub (outbound access)
+      - /opt/devbox/.ssh:/home/developer/.ssh
+      # Your code repositories
+      - /home/user/projects:/home/developer/github
+
+      # Optional
+      # AI tool state — e.g. Claude Code writes session, config, memory and logs to ~/.claude at
+      # runtime. Mount it to persist that state across container recreations. Add similar mounts for
+      # other AI tools you install manually (e.g. ~/.codex, ~/.cursor).
+      - /opt/devbox/.claude:/home/developer/.claude
+      # Docker socket — gives the agent full access to the host Docker daemon (equivalent to root on
+      # the host). Keep commented unless you explicitly need the agent to build or run containers.
+      # Note: paths in docker run -v are resolved on the HOST, not inside the container.
+      # - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "2222:22"
+    restart: unless-stopped

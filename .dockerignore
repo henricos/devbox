@@ -1,0 +1,7 @@
+.git
+.github
+*.md
+compose*
+.gitignore
+.dockerignore
+test
