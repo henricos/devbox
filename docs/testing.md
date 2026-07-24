@@ -10,7 +10,9 @@ Builds the image locally (tag `devbox:smoke`, without publishing), starts a cont
 - `sshd` is running;
 - the expected tools are present and respond to `--version` (or equivalent): `node`, `npm`, `python3`, `git`, `gh`, `docker`, `jq`, `yq`, `bc`, `age`, `sops`, `tmux`, `uv`, `yt-dlp`, `psql`, `playwright`;
 - the `tmux-menu` script is present and executable at `/usr/local/bin`;
-- `developer` has passwordless `sudo` (checked with `sudo -n true`).
+- `/usr/local/bin/devbox-version` matches the project's `VERSION` file;
+- `developer` has passwordless `sudo` (checked with `sudo -n true`);
+- `developer` has a `.hushlogin` file, suppressing the "Last login" line on SSH connect.
 
 At the end, the container is torn down and removed, whether or not the result was published.
 

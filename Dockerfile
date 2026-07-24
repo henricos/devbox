@@ -74,6 +74,11 @@ RUN usermod -l developer ubuntu && \
 RUN echo "developer ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/developer \
     && chmod 0440 /etc/sudoers.d/developer
 
+# Suppress the "Last login" line on SSH connect, so the tmux-menu picker is
+# the first thing the operator sees
+RUN touch /home/developer/.hushlogin \
+    && chown developer:developer /home/developer/.hushlogin
+
 # Switch to developer to install nvm, Node and global npm packages
 USER developer
 WORKDIR /home/developer
@@ -96,6 +101,7 @@ RUN echo 'if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then exec tmux-menu; fi
 # SSH configuration requires root
 USER root
 COPY tmux-menu /usr/local/bin/tmux-menu
+COPY VERSION /usr/local/bin/devbox-version
 RUN chmod +x /usr/local/bin/tmux-menu
 RUN . /home/developer/.nvm/nvm.sh \
     && playwright install-deps chromium \

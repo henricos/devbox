@@ -62,10 +62,18 @@ check_cmd "psql --version"               root "psql --version"
 check_cmd "uv --version"                 root "uv --version"
 check_cmd "yt-dlp --version"             root "yt-dlp --version"
 check_cmd "tmux-menu present and executable" root "test -x /usr/local/bin/tmux-menu"
+
+if [ "$(docker exec "$CONTAINER_NAME" cat /usr/local/bin/devbox-version 2>/dev/null)" = "$(cat VERSION)" ]; then
+    pass "devbox-version matches VERSION file"
+else
+    fail "devbox-version matches VERSION file"
+fi
+
 check_cmd "node --version"               developer "node --version"
 check_cmd "npm --version"                developer "npm --version"
 check_cmd "playwright --version"         developer "playwright --version"
 check_cmd "developer has passwordless sudo" developer "sudo -n true"
+check_cmd "developer has .hushlogin"     developer "test -f ~/.hushlogin"
 
 log ""
 if [ "$STATUS" -eq 0 ]; then

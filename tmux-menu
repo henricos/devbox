@@ -3,6 +3,13 @@ set -u
 
 readonly SESSION_PREFIX="term"
 readonly SESSION_LIMIT=5
+readonly VERSION_FILE="/usr/local/bin/devbox-version"
+
+print_title() {
+    local version="$(cat "$VERSION_FILE" 2>/dev/null || echo '?')"
+
+    echo "--- Devbox v${version} ---"
+}
 
 session_name() {
     printf '%s-%02d' "$SESSION_PREFIX" "$1"
@@ -40,15 +47,17 @@ while true; do
     default_choice="$(first_available_choice)"
 
     echo
+    print_title
+    echo
     echo "Persistent devbox sessions"
     echo
 
     for i in $(seq 1 "$SESSION_LIMIT"); do
         session="$(session_name "$i")"
         if session_exists "$session"; then
-            status="in use"
+            status="[in use]"
         else
-            status="available"
+            status="[available]"
         fi
 
         printf "%s) %s  %s\n" "$i" "$session" "$status"
