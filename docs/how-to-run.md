@@ -9,7 +9,7 @@ High-level guidance on what needs to be prepared to start the container. `compos
 | `.ssh` → `/home/developer/.ssh` | yes | A single directory for two purposes: inbound SSH (`authorized_keys`) and outbound SSH (own key for GitHub: `id_github` + `config`). Must be owned by UID 1000 with strict permissions (directory `700`, files `600`) — sshd refuses the connection if they are more open than that. |
 | `github` → `/home/developer/github` | yes | Your code repositories. |
 | `.claude` → `/home/developer/.claude` | optional | AI tool state (session, config, memory, logs) written at runtime by Claude Code. Mount it so this state survives container recreations instead of resetting each time. Add similar mounts for other AI tools you install manually. |
-| `docker.sock` → `/var/run/docker.sock` | optional | Access to the host's Docker daemon, equivalent to root on the machine. Only mount it if you need the container to build or run containers. |
+| `docker.sock` → `/var/run/docker.sock` | optional | Access to the host's Docker daemon, equivalent to root on the machine. Only mount it if you need the container to build or run containers. On startup, the entrypoint reads the socket's GID and adds `developer` to a group with that GID (creating `docker-host` if none exists), so `docker` works without `sudo`. If the socket is owned by GID 0, it is left alone and `sudo docker` is required. |
 
 No environment variable is required.
 

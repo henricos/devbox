@@ -101,8 +101,9 @@ RUN echo 'if [ -n "$SSH_CONNECTION" ] && [ -z "$TMUX" ]; then exec tmux-menu; fi
 # SSH configuration requires root
 USER root
 COPY tmux-menu /usr/local/bin/tmux-menu
+COPY devbox-entrypoint /usr/local/bin/devbox-entrypoint
 COPY VERSION /usr/local/bin/devbox-version
-RUN chmod +x /usr/local/bin/tmux-menu
+RUN chmod +x /usr/local/bin/tmux-menu /usr/local/bin/devbox-entrypoint
 RUN . /home/developer/.nvm/nvm.sh \
     && playwright install-deps chromium \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -118,6 +119,5 @@ LABEL org.opencontainers.image.version="${IMAGE_VERSION}" \
       org.opencontainers.image.source="https://github.com/henricos/devbox"
 
 EXPOSE 22
-# -e sends sshd's log output to stderr instead of syslog, so `docker logs`
-# actually shows auth failures — there is no syslog daemon in this image.
-ENTRYPOINT ["/usr/sbin/sshd", "-D", "-e"]
+# Grants developer access to a mounted docker.sock, then execs sshd
+ENTRYPOINT ["/usr/local/bin/devbox-entrypoint"]

@@ -1,0 +1,37 @@
+#!/bin/bash
+set -eu
+
+readonly DOCKER_SOCKET="/var/run/docker.sock"
+readonly DEV_USER="developer"
+readonly FALLBACK_GROUP="docker-host"
+
+# The mounted socket belongs to the host's docker group, whose GID differs per
+# host and is only known at runtime. sshd rebuilds each session's groups from
+# /etc/group on login, so the developer user has to join a group with that GID
+# here — Compose's group_add would only reach the sshd process itself.
+grant_docker_socket_access() {
+    [ -S "$DOCKER_SOCKET" ] || return 0
+
+    local gid group
+    gid="$(stat -c '%g' "$DOCKER_SOCKET")"
+
+    if [ "$gid" = "0" ]; then
+        echo "devbox-entrypoint: $DOCKER_SOCKET is owned by GID 0; not adding $DEV_USER to the root group (use sudo docker)" >&2
+        return 0
+    fi
+
+    group="$(getent group "$gid" | cut -d: -f1)"
+    if [ -z "$group" ]; then
+        group="$FALLBACK_GROUP"
+        groupadd -g "$gid" "$group"
+    fi
+
+    usermod -aG "$group" "$DEV_USER"
+    echo "devbox-entrypoint: granted $DEV_USER access to $DOCKER_SOCKET via group $group (GID $gid)" >&2
+}
+
+grant_docker_socket_access
+
+# -e sends sshd's log output to stderr instead of syslog, so `docker logs`
+# actually shows auth failures — there is no syslog daemon in this image.
+exec /usr/sbin/sshd -D -e "$@"

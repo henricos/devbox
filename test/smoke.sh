@@ -3,6 +3,7 @@ set -eu
 
 IMAGE_TAG="devbox:smoke"
 CONTAINER_NAME="devbox-smoke-test"
+DOCKER_SOCKET="/var/run/docker.sock"
 
 STATUS=0
 
@@ -29,7 +30,11 @@ docker build -t "$IMAGE_TAG" .
 
 log "Starting test container ($CONTAINER_NAME)..."
 cleanup
-docker run -d --name "$CONTAINER_NAME" "$IMAGE_TAG" >/dev/null
+SOCKET_MOUNT=()
+if [ -S "$DOCKER_SOCKET" ]; then
+    SOCKET_MOUNT=(-v "$DOCKER_SOCKET:$DOCKER_SOCKET")
+fi
+docker run -d --name "$CONTAINER_NAME" "${SOCKET_MOUNT[@]}" "$IMAGE_TAG" >/dev/null
 
 log "Waiting for sshd to start..."
 for _ in $(seq 1 20); do
@@ -74,6 +79,16 @@ check_cmd "npm --version"                developer "npm --version"
 check_cmd "playwright --version"         developer "playwright --version"
 check_cmd "developer has passwordless sudo" developer "sudo -n true"
 check_cmd "developer has .hushlogin"     developer "test -f ~/.hushlogin"
+
+# Only meaningful when the host exposes the socket at the standard path with a
+# non-root group (Docker Desktop hands it over as root:root, which the
+# entrypoint deliberately leaves alone)
+SOCKET_GID="$(docker exec "$CONTAINER_NAME" stat -c '%g' "$DOCKER_SOCKET" 2>/dev/null || echo '')"
+if [ -n "$SOCKET_GID" ] && [ "$SOCKET_GID" != "0" ]; then
+    check_cmd "developer can reach mounted docker.sock" developer "docker ps"
+else
+    log "Skipping docker.sock check (socket not mounted or owned by GID 0)"
+fi
 
 log ""
 if [ "$STATUS" -eq 0 ]; then

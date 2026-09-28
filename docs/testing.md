@@ -12,7 +12,8 @@ Builds the image locally (tag `devbox:smoke`, without publishing), starts a cont
 - the `tmux-menu` script is present and executable at `/usr/local/bin`;
 - `/usr/local/bin/devbox-version` matches the project's `VERSION` file;
 - `developer` has passwordless `sudo` (checked with `sudo -n true`);
-- `developer` has a `.hushlogin` file, suppressing the "Last login" line on SSH connect.
+- `developer` has a `.hushlogin` file, suppressing the "Last login" line on SSH connect;
+- `developer` can run `docker ps` against the host's `docker.sock`, which the smoke test mounts when the host exposes it at `/var/run/docker.sock`. The check is skipped when the socket is absent or owned by GID 0 (e.g. Docker Desktop).
 
 At the end, the container is torn down and removed, whether or not the result was published.
 
